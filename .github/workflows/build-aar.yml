@@ -1,0 +1,48 @@
+name: build-qqclient-aar
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK platform & build-tools
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
+
+      - name: Fetch nodejs-mobile aar
+        run: |
+          set -e
+          curl -sL -o nm.zip https://github.com/nodejs-mobile/nodejs-mobile/releases/download/v18.20.4/nodejs-mobile-v18.20.4-android.zip
+          unzip -o nm.zip -d nm
+          find nm -maxdepth 2 -type f | head -50
+          AAR=$(find nm -name '*.aar' | head -1)
+          mkdir -p qqclient/libs
+          cp "$AAR" qqclient/libs/nodejs-mobile-release.aar
+          ls -l qqclient/libs
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
+
+      - name: Build aar
+        run: gradle :qqclient:assembleRelease --no-daemon --stacktrace
+
+      - name: Upload aar
+        uses: actions/upload-artifact@v4
+        with:
+          name: lingxi-qqclient-aar
+          path: qqclient/build/outputs/aar/*.aar
