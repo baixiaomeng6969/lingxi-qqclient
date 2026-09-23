@@ -1,0 +1,25 @@
+// lingxi-qqclient：把 QQClientService.java 编成 HBuilderX 用的 aar
+// 说明：本模块只编译我们自己的 Java（QQClientService），nodejs-mobile 以本地 aar 提供编译期类。
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.lingxi.qqclient'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.12.0'
+    // nodejs-mobile 运行时（提供 com.nodejs.mobile.NodeJS）；本地 aar，编译期用
+    implementation files('libs/nodejs-mobile-release.aar')
+}
